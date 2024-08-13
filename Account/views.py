@@ -1,12 +1,24 @@
+from django.forms import BaseModelForm
+from django.http import HttpResponse
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.views import generic
-from .forms import LoginForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate,login,logout
-from .mixins import LogoutMixins
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from django.urls import reverse_lazy
+
+
+
+from .mixins import(
+     LogoutMixins,
+)
+from .forms import (
+    LoginForm,
+    UserRegistrationForm,
+)
+
 # Create your views here.
 
 @method_decorator(never_cache,name="dispatch")
@@ -38,7 +50,7 @@ class Login(LogoutMixins,generic.View):
                 login(self.request,user)
                 return redirect('home')
             else:
-                messages.warning(self.request,"Please Input currect data")
+                messages.warning(self.request,"Email and Password not match")
                 return redirect('login')
         else:
             messages.warning(self.request,'User not validated')
@@ -49,3 +61,18 @@ class Logout(generic.View):
     def get(self,*args, **kwargs):
         logout(self.request)
         return redirect('login')
+    
+
+class Registration(LogoutMixins, generic.CreateView):
+    template_name = 'Account/register.html'
+    form_class = UserRegistrationForm
+    success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Registration Successfull !")
+        return super().form_valid(form)
+    
+    
+
+    
+
