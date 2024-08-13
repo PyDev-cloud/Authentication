@@ -1,5 +1,4 @@
-from django.forms import BaseModelForm
-from django.http import HttpResponse
+from django.forms.forms import BaseForm
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.views import generic
@@ -17,6 +16,7 @@ from .mixins import(
 from .forms import (
     LoginForm,
     UserRegistrationForm,
+    ChengePassowdForm,
 )
 
 # Create your views here.
@@ -75,4 +75,24 @@ class Registration(LogoutMixins, generic.CreateView):
     
 
     
+
+class ChangePassword(LoginRequiredMixin,generic.FormView):
+    template_name="Account/chenge_password.html"
+    form_class=ChengePassowdForm
+    success_url=reverse_lazy('login')
+
+
+    def get_form_kwargs(self) :
+        context= super().get_form_kwargs()
+        context['user']=self.request.user
+        return context
+
+    def form_valid(self, form):
+        user = self.request.user
+        user.set_password(form.cleaned_data.get('new_password'))
+        user.save()
+        messages.success(self.request, "Password changed Successfully !")
+        return super().form_valid(form)
+    
+
 
